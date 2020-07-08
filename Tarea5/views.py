@@ -6,11 +6,25 @@ from Tarea5.settings import BASE_DIR
 
 url_api = "https://integracion-rick-morty-api.herokuapp.com/graphql"
 
-def homepage(request): #la barra buscadora y todos los capitulos con ciertos datos (son link buttons)
+def homepage(request): 
 
-    query = """
+    query_inicial = """
             query {
                 episodes {
+                    info {
+                      pages
+                    }
+                }
+            }
+            """
+    response_inicial = requests.post(url_api, json={'query': query_inicial}).json()
+    num_pages = response_inicial['data']['episodes']['info']['pages']
+    episodes = []
+    for i in range (num_pages):
+        page = i + 1
+        query = """
+            query {
+                episodes (page: %i) {
                     results {
                         name
                         air_date
@@ -18,11 +32,12 @@ def homepage(request): #la barra buscadora y todos los capitulos con ciertos dat
                     }
                 }
                 }
-            """
-
-    response = requests.post(url_api, json={'query': query}).json() 
+            """ % page
+        response = requests.post(url_api, json={'query': query}).json()
+        episodes_page = response['data']['episodes']['results'] 
+        for episode in episodes_page:
+            episodes.append(episode)
   #  print(response)
-    episodes = response['data']['episodes']['results']
 
     home_template = open(BASE_DIR + "/Tarea5/Templates/home_temp.html")
 
@@ -37,7 +52,7 @@ def homepage(request): #la barra buscadora y todos los capitulos con ciertos dat
 
     return HttpResponse(doc)
 
-def episode(request, name_ep): #sin id, url ni creación
+def episode(request, name_ep): 
     query = """
             query {
                 episodes (filter: {name: "%s"}) {
@@ -76,7 +91,7 @@ def episode(request, name_ep): #sin id, url ni creación
 
     return HttpResponse(doc)
 
-def character(request, name_ch): #sin id, url ni creación. Con todos sus lugares y episodios
+def character(request, name_ch):
 
     query = """
             query {
@@ -113,21 +128,9 @@ def character(request, name_ch): #sin id, url ni creación. Con todos sus lugare
     gender = info_character["gender"]
     origin = info_character["origin"]
     location = info_character["location"]
-    image = info_character["image"]  #url
-    list_episodes = info_character["episode"]  #lista con los url de cada episodio
-   
-   # last_location =  requests.get(location['url']).json()
-
- #   if origin['url'] != "":
-  #      origin_location = requests.get(origin['url']).json()
-   # else:
-    #    origin_location = "Es un lugar con name unkwown"
-
- #   list_episodes = []
- #   for ele in episode:
-  #      response = requests.get(ele).json()
-   #     list_episodes.append(response)
-
+    image = info_character["image"] 
+    list_episodes = info_character["episode"] 
+ 
 
     character_template = open(BASE_DIR + "/Tarea5/Templates/character_temp.html")
 
@@ -167,11 +170,6 @@ def location(request, name_loc):
     dimension = info_locations["dimension"]
     residents = info_locations["residents"]
 
- #   list_residents = []
-  #  for ele in residents:
-   #     response = requests.get(ele).json()
-    #    list_residents.append(response)
-
     location_template = open(BASE_DIR + "/Tarea5/Templates/location_temp.html")
 
     plt = Template(location_template.read())
@@ -184,7 +182,7 @@ def location(request, name_loc):
 
     return HttpResponse(doc)
     
-def search(request): #iterar sobre las pages
+def search(request): 
     query = request.GET["query_input"]
     results_episodes = []
     results_characters = []
