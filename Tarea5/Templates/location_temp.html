@@ -1,0 +1,40 @@
+<html>
+  <head>
+    <title> Character {{name}}  </title> <!-- se muestra ese título en la pestaña de safari-->
+    <h1> Información de la ubicación {{name}}. </h1>
+  </head>                                            
+  <body>
+    <div class="wrapper">   
+      <nav class="main-nav">
+        <a href="{% url 'index' %}">Back Home</a> 
+      </nav>
+    </div>
+    <p> 
+        {% if name %} 
+
+        <li> Name: {{name}} </li> 
+        <li> Type: {{loc_type}} </li> 
+        <li> Dimension: {{dimension}} </li> 
+
+          {% if residents %}
+
+          <ul>
+
+            {% for resident in residents %} 
+            
+            <li> Resident name: <a href="{% url 'character' name_ch=resident.name %}">{{resident.name}} </a> </li> 
+            {% endfor %} 
+
+          </ul>
+
+
+          {% else %}
+              <p> No hay residentes en esta ubicación</p>
+          {% endif %}
+
+        {% endif %}
+   </p>      
+  </body>
+   
+</html>
+
